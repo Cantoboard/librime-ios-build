@@ -2,6 +2,12 @@
 
 set -e
 
+export SCRIPT_DIR=$(dirname $(realpath $0))
+
+export BOOST_VERSION=1.76.0
+export RIME_ROOT=$(realpath $1)
+export THREADS="-j$(sysctl -n hw.ncpu)"
+
 export BUILD_DIR="$PWD/build"
 export BUILD_BOOST_DIR="$BUILD_DIR/boost"
 export BUILD_THIRDPARTY_DIR="$BUILD_DIR/thirdparty"
@@ -16,22 +22,16 @@ export OUTPUT_LIBRIME_DIR="$PWD/output/librime"
 export LIB_NAME=Rime
 export OUTPUT_XCFW_PATH="$PWD/output/$LIB_NAME.xcframework"
 
-export BOOST_VERSION=1.76.0
-
 if [ -z "$1" ] || [ ! -d "$1" ]; then
     echo "Please specify path to librime."
     exit -1
 fi
 
-if [ -z "$CMAKE_IOS_TOOLCHAIN_ROOT" ]; then
-    echo "Please specify CMAKE_IOS_TOOLCHAIN_ROOT."
+export CMAKE_IOS_TOOLCHAIN_ROOT="$SCRIPT_DIR/ios-cmake"
+if [ ! -d "$CMAKE_IOS_TOOLCHAIN_ROOT" ]; then
+    echo "Please install CMake toolchain for iOS."
     exit -1
 fi
-
-export RIME_ROOT=$(realpath $1)
-echo RIME_ROOT="$RIME_ROOT"
-
-export SCRIPT_DIR=$(dirname $(realpath $0))
 
 build_boost() {
     if [ -f $BUILD_BOOST_DIR/build/boost/$BOOST_VERSION/macos/release/build/x86_64/libboost.a ] &&
@@ -75,8 +75,6 @@ install_boost() {
     ln -s $BUILD_BOOST_DIR/build/boost/$BOOST_VERSION/ios/release/prefix/include $OUTPUT_BOOST_DIR/iphonesimulator_arm64/include || true
     ln -s $BUILD_BOOST_DIR/build/boost/$BOOST_VERSION/ios/release/build/iphonesimulator/arm64 $OUTPUT_BOOST_DIR/iphonesimulator_arm64/lib || true
 }
-
-export THREADS="-j$(sysctl -n hw.ncpu)"
 
 build_thirdparty() {
     export PLAT=$1
