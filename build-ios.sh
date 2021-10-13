@@ -5,7 +5,6 @@ set -e
 export SCRIPT_DIR=$(dirname $(realpath $0))
 
 export BOOST_VERSION=1.76.0
-export RIME_ROOT=$(realpath $1)
 export THREADS="-j$(sysctl -n hw.ncpu)"
 
 export BUILD_DIR="$PWD/build"
@@ -26,6 +25,7 @@ if [ -z "$1" ] || [ ! -d "$1" ]; then
     echo "Please specify path to librime."
     exit -1
 fi
+export RIME_ROOT=$(realpath $1)
 
 export CMAKE_IOS_TOOLCHAIN_ROOT="$SCRIPT_DIR/ios-cmake"
 if [ ! -d "$CMAKE_IOS_TOOLCHAIN_ROOT" ]; then
@@ -93,44 +93,44 @@ build_thirdparty() {
 }
 
 build_librime() {
-    export PLAT=$1
-    export ARCH=$2
-    export PLAT_ARCH=${PLAT}_${ARCH}
+    PLAT=$1
+    ARCH=$2
+    PLAT_ARCH=${PLAT}_${ARCH}
 
-    export HOST_ARCH="macosx_$(uname -m)"
-    export HOST_THIRDPARTY_DIR="$OUTPUT_THIRDPARTY_DIR/$HOST_ARCH"
+    HOST_ARCH="macosx_$(uname -m)"
+    HOST_THIRDPARTY_DIR="$OUTPUT_THIRDPARTY_DIR/$HOST_ARCH"
     if [ "$PLAT_ARCH" = "macosx_$HOST_ARCH" ]; then
-        export IS_HOST_ARCH=ON
+        IS_HOST_ARCH=ON
     else
-        export IS_HOST_ARCH=OFF
+        IS_HOST_ARCH=OFF
     fi
 
     unset CFLAGS
     unset CXXFLAGS
     unset LDFLAGS
 
-    export ENABLE_BITCODE=0
+    ENABLE_BITCODE=0
     case "$PLAT_ARCH" in
         "macosx_x86_64")
-            export PLATFORM=MAC
-            export DEPLOYMENT_TARGET=10.9
+            PLATFORM=MAC
+            DEPLOYMENT_TARGET=10.9
             ;;
         "macosx_arm64")
-            export PLATFORM=MAC_ARM64
-            export DEPLOYMENT_TARGET=10.9
+            PLATFORM=MAC_ARM64
+            DEPLOYMENT_TARGET=10.9
             ;;
         "iphonesimulator_x86_64")
-            export PLATFORM=SIMULATOR64
-            export DEPLOYMENT_TARGET=13.0
+            PLATFORM=SIMULATOR64
+            DEPLOYMENT_TARGET=13.0
             ;;
         "iphonesimulator_arm64")
-            export PLATFORM=SIMULATORARM64
-            export DEPLOYMENT_TARGET=13.0
+            PLATFORM=SIMULATORARM64
+            DEPLOYMENT_TARGET=13.0
             ;;
         "iphoneos_arm64")
-            export PLATFORM=OS64
-            export DEPLOYMENT_TARGET=13.0
-            export ENABLE_BITCODE=1
+            PLATFORM=OS64
+            DEPLOYMENT_TARGET=13.0
+            ENABLE_BITCODE=1
             ;;
         *)
             echo "Unsupported PLAT_ARCH $PLAT_ARCH"
@@ -138,11 +138,11 @@ build_librime() {
             ;;
     esac
 
-    export XCODE_IOS_CROSS_COMPILE_CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$CMAKE_IOS_TOOLCHAIN_ROOT/ios.toolchain.cmake -DPLATFORM=$PLATFORM -DDEPLOYMENT_TARGET=$DEPLOYMENT_TARGET -DENABLE_BITCODE=$ENABLE_BITCODE -DENABLE_VISIBILITY=1 -DCMAKE_XCODE_ATTRIBUTE_APPLICATION_EXTENSION_API_ONLY=YES -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO -T buildsystem=1"
+    XCODE_IOS_CROSS_COMPILE_CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$CMAKE_IOS_TOOLCHAIN_ROOT/ios.toolchain.cmake -DPLATFORM=$PLATFORM -DDEPLOYMENT_TARGET=$DEPLOYMENT_TARGET -DENABLE_BITCODE=$ENABLE_BITCODE -DENABLE_VISIBILITY=1 -DCMAKE_XCODE_ATTRIBUTE_APPLICATION_EXTENSION_API_ONLY=YES -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO -T buildsystem=1"
 
     echo "Building librime for $PLAT_ARCH"
 
-    export PLAT_ARCH_BUILD_DIR=$BUILD_LIBRIME_DIR/$PLAT_ARCH
+    PLAT_ARCH_BUILD_DIR=$BUILD_LIBRIME_DIR/$PLAT_ARCH
 
     echo "$OUTPUT_THIRDPARTY_DIR/$PLAT_ARCH/lib"
     if [ ! -d $PLAT_ARCH_BUILD_DIR/rime.xcodeproj ]; then
@@ -170,17 +170,17 @@ build_xcframework() {
     echo "Building XCFramework..."
     rm -rf "$BUILD_XCFW_PATH" || true
 
-    export FW_MACOSX_DIR="$BUILD_XCFW_PATH/macosx/$LIB_NAME.framework"
-    export FW_IOSSIM_DIR="$BUILD_XCFW_PATH/iphonesimulator/$LIB_NAME.framework"
-    export FW_IOS_DIR="$BUILD_XCFW_PATH/iphoneos/$LIB_NAME.framework"
+    FW_MACOSX_DIR="$BUILD_XCFW_PATH/macosx/$LIB_NAME.framework"
+    FW_IOSSIM_DIR="$BUILD_XCFW_PATH/iphonesimulator/$LIB_NAME.framework"
+    FW_IOS_DIR="$BUILD_XCFW_PATH/iphoneos/$LIB_NAME.framework"
 
     mkdir -p "$FW_MACOSX_DIR"
     mkdir -p "$FW_IOSSIM_DIR"
     mkdir -p "$FW_IOS_DIR"
 
-    export FW_MACOSX_LIB="$FW_MACOSX_DIR/$LIB_NAME"
-    export FW_IOSSIM_LIB="$FW_IOSSIM_DIR/$LIB_NAME"
-    export FW_IOS_LIB="$FW_IOS_DIR/$LIB_NAME"
+    FW_MACOSX_LIB="$FW_MACOSX_DIR/$LIB_NAME"
+    FW_IOSSIM_LIB="$FW_IOSSIM_DIR/$LIB_NAME"
+    FW_IOS_LIB="$FW_IOS_DIR/$LIB_NAME"
 
     cp -R src/ "$FW_MACOSX_DIR"
     cp -R src/ "$FW_IOSSIM_DIR"
