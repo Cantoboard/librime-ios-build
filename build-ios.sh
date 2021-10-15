@@ -201,9 +201,9 @@ build_xcframework() {
         -framework $FW_IOS_DIR \
         -output "$OUTPUT_XCFW_PATH"
 
-    LAST_ARG="${@: -1}"
-    if [ -d "$LAST_ARG" ]; then
-        cp -a "$OUTPUT_XCFW_PATH" "$LAST_ARG"
+    if [ -d "$1" ]; then
+        echo "Copying to $1"
+        cp -a "$OUTPUT_XCFW_PATH" "$1"
     fi
 }
 
@@ -230,4 +230,4 @@ build_librime "iphonesimulator" "arm64"
  
 build_librime "iphoneos" "arm64"
 
-build_xcframework
+build_xcframework "${@: -1}"
