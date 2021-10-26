@@ -84,7 +84,7 @@ build_thirdparty() {
     echo "Building third party libraries for $PLAT_ARCH"
 
     SDKROOT=$(xcrun --sdk $PLAT --show-sdk-path) \
-	MACOSX_DEPLOYMENT_TARGET=10.9 \
+	MACOSX_DEPLOYMENT_TARGET=10.12 \
 	CMAKE_OSX_ARCHITECTURES=$ARCH \
     RIME_ROOT=$RIME_ROOT \
 	BUILD_DIR=$BUILD_THIRDPARTY_DIR/$PLAT_ARCH \
@@ -113,11 +113,11 @@ build_librime() {
     case "$PLAT_ARCH" in
         "macosx_x86_64")
             PLATFORM=MAC
-            DEPLOYMENT_TARGET=10.9
+            DEPLOYMENT_TARGET=10.12
             ;;
         "macosx_arm64")
             PLATFORM=MAC_ARM64
-            DEPLOYMENT_TARGET=10.9
+            DEPLOYMENT_TARGET=10.12
             ;;
         "iphonesimulator_x86_64")
             PLATFORM=SIMULATOR64
