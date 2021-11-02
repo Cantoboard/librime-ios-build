@@ -138,8 +138,6 @@ build_librime() {
             ;;
     esac
 
-    XCODE_IOS_CROSS_COMPILE_CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=$CMAKE_IOS_TOOLCHAIN_ROOT/ios.toolchain.cmake -DPLATFORM=$PLATFORM -DDEPLOYMENT_TARGET=$DEPLOYMENT_TARGET -DENABLE_BITCODE=$ENABLE_BITCODE -DENABLE_VISIBILITY=1 -DCMAKE_XCODE_ATTRIBUTE_APPLICATION_EXTENSION_API_ONLY=YES -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO -T buildsystem=1"
-
     echo "Building librime for $PLAT_ARCH"
 
     PLAT_ARCH_BUILD_DIR=$BUILD_LIBRIME_DIR/$PLAT_ARCH
@@ -151,14 +149,22 @@ build_librime() {
         -DBUILD_STATIC=ON \
         -DBUILD_TEST=$IS_HOST_ARCH \
         -DBUILD_SAMPLE=$IS_HOST_ARCH \
-        -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
+        -DCMAKE_FRAMEWORK=ON \
         -DCMAKE_FIND_ROOT_PATH="$OUTPUT_THIRDPARTY_DIR/$PLAT_ARCH" \
         -DCMAKE_INSTALL_PREFIX="$OUTPUT_LIBRIME_DIR/$PLAT_ARCH" \
         -DCAPNP_EXECUTABLE="$HOST_THIRDPARTY_DIR/bin/capnp" \
         -DCAPNPC_CXX_EXECUTABLE="$HOST_THIRDPARTY_DIR/bin/capnpc-c++" \
         -DBoost_NO_BOOST_CMAKE=TRUE \
         -DBOOST_ROOT="$OUTPUT_BOOST_DIR/$PLAT_ARCH" \
-        $XCODE_IOS_CROSS_COMPILE_CMAKE_FLAGS
+        -DCMAKE_TOOLCHAIN_FILE=$CMAKE_IOS_TOOLCHAIN_ROOT/ios.toolchain.cmake \
+        -DPLATFORM=$PLATFORM \
+        -DDEPLOYMENT_TARGET=$DEPLOYMENT_TARGET \
+        -DENABLE_BITCODE=$ENABLE_BITCODE \
+        -DENABLE_VISIBILITY=1 \
+        -DCMAKE_XCODE_ATTRIBUTE_APPLICATION_EXTENSION_API_ONLY=YES \
+        -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO \
+        -DCMAKE_XCODE_ATTRIBUTE_LD_DYLIB_INSTALL_NAME="@rpath/Rime.framework/Rime" \
+        -T buildsystem=1
     else
         echo "Skip configure for $PLAT_ARCH."
     fi
@@ -186,9 +192,9 @@ build_xcframework() {
     cp -R src/ "$FW_IOSSIM_DIR"
     cp -R src/ "$FW_IOS_DIR"
 
-    lipo -create $OUTPUT_LIBRIME_DIR/macosx_x86_64/lib/librime.1.dylib $OUTPUT_LIBRIME_DIR/macosx_arm64/lib/librime.1.dylib -output $FW_MACOSX_LIB
-    lipo -create $OUTPUT_LIBRIME_DIR/iphonesimulator_x86_64/lib/librime.1.dylib $OUTPUT_LIBRIME_DIR/iphonesimulator_arm64/lib/librime.1.dylib -output $FW_IOSSIM_LIB
-    lipo -create $OUTPUT_LIBRIME_DIR/iphoneos_arm64/lib/librime.1.dylib -output $FW_IOS_LIB
+    lipo -create $OUTPUT_LIBRIME_DIR/macosx_x86_64/lib/rime.framework/rime $OUTPUT_LIBRIME_DIR/macosx_arm64/lib/rime.framework/rime -output $FW_MACOSX_LIB
+    lipo -create $OUTPUT_LIBRIME_DIR/iphonesimulator_x86_64/lib/rime.framework/rime $OUTPUT_LIBRIME_DIR/iphonesimulator_arm64/lib/rime.framework/rime -output $FW_IOSSIM_LIB
+    lipo -create $OUTPUT_LIBRIME_DIR/iphoneos_arm64/lib/rime.framework/rime -output $FW_IOS_LIB
 
     install_name_tool -id "@rpath/$LIB_NAME.framework/$LIB_NAME" "$FW_MACOSX_LIB"
     install_name_tool -id "@rpath/$LIB_NAME.framework/$LIB_NAME" "$FW_IOSSIM_LIB"
